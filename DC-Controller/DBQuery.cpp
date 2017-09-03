@@ -7,9 +7,9 @@
 
 #include "DBQuery.h"
 
-DBQuery::DBQuery(QueueHandle_t Tx_q, QueueHandle_t Rx_q) {
-	Send_queue = Tx_q;
-	Recive_queue = Rx_q;
+DBQuery::DBQuery(QueueHandle_t g_q, QueueHandle_t l_q) {
+	Send_queue = g_q;
+	Recive_queue = l_q;
 
 }
 

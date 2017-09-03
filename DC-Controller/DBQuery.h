@@ -25,7 +25,7 @@ extern QueueHandle_t GlobalQ;
 
 class DBQuery {
 public:
-	DBQuery(QueueHandle_t Tx_q, QueueHandle_t Rx_q);
+	DBQuery(QueueHandle_t g_q, QueueHandle_t l_q);
 	virtual ~DBQuery();
 	void 	Set_global(int _ID, int _Value);
 	int 		Get_global(int _ID);
