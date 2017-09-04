@@ -7,18 +7,11 @@
 
 #include "DBQuery.h"
 
-DBQuery::DBQuery(QueueHandle_t g_q, QueueHandle_t l_q) {
-	Send_queue = g_q;
-	Recive_queue = l_q;
-
-}
-
-DBQuery::~DBQuery() {
-	// TODO Auto-generated destructor stub
-}
+void Global_db_eprom_set(int _ID, int _Value) {}
+int Global_db_eprom_get(int _ID, QueueHandle_t Recive_queue) {return(0);}
 
 
-void DBQuery::Set_global(int _ID, int _Value)
+void Global_db_set(int _ID, int _Value)
 {
 	Queue_struct Mess_out;
 
@@ -26,19 +19,19 @@ void DBQuery::Set_global(int _ID, int _Value)
 	Mess_out.ID = _ID;
 	Mess_out.value = _Value;
 	Mess_out.returnHandle = NULL;
-    xQueueSendToBack(Send_queue,&Mess_out,100);
+    xQueueSendToBack(Global_db_q,&Mess_out,100);
 }
 
-int DBQuery::Get_global(int _ID)
+int Global_db_get(int _ID, QueueHandle_t Recive_queue)
 {
 	Queue_struct Mess_in,Mess_out;
 
 	Mess_out.command = 10;
 	Mess_out.ID = _ID;
-	Mess_out.returnHandle = Send_queue;
-    xQueueSendToBack(Send_queue,&Mess_out,100);
+	Mess_out.returnHandle = Recive_queue;
+    xQueueSendToBack(Global_db_q,&Mess_out,100);
 	xQueueReceive(Recive_queue,&Mess_in,100);
-	 return(Mess_in.value);
+	return(Mess_in.value);
 
 }
 

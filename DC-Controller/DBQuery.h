@@ -21,18 +21,12 @@ struct Queue_struct
 	int	value;						// Value of question / responce
 	QueueHandle_t returnHandle;		// Potential return queue-handler.
 };
-extern QueueHandle_t GlobalQ;
 
-class DBQuery {
-public:
-	DBQuery(QueueHandle_t g_q, QueueHandle_t l_q);
-	virtual ~DBQuery();
-	void 	Set_global(int _ID, int _Value);
-	int 		Get_global(int _ID);
-private:
-	QueueHandle_t	Send_queue;
-	QueueHandle_t	Recive_queue;
+extern QueueHandle_t Global_db_q;
 
-};
+void 	Global_db_set(int _ID, int _Value);
+int 	Global_db_get(int _ID, QueueHandle_t Resice_queue);
+void 	Global_db_eprom_set(int _ID, int _Value);
+int 	Global_db_eprom_get(int _ID, QueueHandle_t Resice_queue);
 
 #endif /* DBQUERY_H_ */

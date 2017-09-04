@@ -3,8 +3,12 @@
 #include <queue.h>
 
 #include "GlobalDB10.hpp"
-#include "Led10.h"
 #include "DBQuery.h"
+#include "Volt20.h"
+#include "Current20.h"
+#include "Filter10.h"
+#include "Pot10.h"
+#include "TSSerial10.h"
 
 /* ------------------------------------------------------------------
  * CD-Controller ver 2 utvecklas i Eclipse och byter kernel från
@@ -20,11 +24,26 @@
 
 #include "SDC-30a-HW.h"
 
-QueueHandle_t Global_DB_Q;
-QueueHandle_t Serial_Q;
+// Define objects used
+Volt Volt_in(InputVoltPin,6400  );                        // Pin to measure inputvoltage, Max Voltage * 100
+Pot Pot(PotPin);                                              // Pin to measure pot position, 0-100.
+Current Out_current(OutputCurrentPin,3);                        // Pin to measure outeput current .
+//mEEPROM storage;
+//Temperature mosfetTemp(TemperaturPin,2);      // pin, Type 1. (type not implemented yet, only DS18x support).
+Filter Driver_temp_filtered(13);
+Filter Tps_filtered(7);
+
+//RPageVarsStruct RPage;
+//Page1DataStruct pg1;
+
+//MegaTuneSerial mySerial(BaudRate);
+
+QueueHandle_t Global_db_q;
 
 void Serial_task(void *pvParameters);
 void Global_db_task(void *pvParameters);
+void DCC_task(void *pvParameters);
+
 void setPwmFrequency(int pin, int divisor) {
   byte mode;
   if(pin == 5 || pin == 6 || pin == 9 || pin == 10) {
@@ -55,12 +74,7 @@ void setPwmFrequency(int pin, int divisor) {
     TCCR2B = (TCCR2B & 0b11111000) | mode;
   }
 }
-void DCC_task(void *pvParameters)
-{
-	for (;;) // A Task shall never return or exit.
-	{
-	}
-}
+
 void setup()
 {
 //    analogReference(EXTERNAL);					// Set ADC reference voltage to external reference
@@ -71,8 +85,7 @@ void setup()
 
     Serial.begin(BaudRate);
 	while (!Serial)  { ; }						// wait for serial port to connect.
-	Global_DB_Q = xQueueCreate(4,sizeof(Queue_struct));
-	Serial_Q = xQueueCreate(2 , sizeof(Queue_struct ) );
+	Global_db_q = xQueueCreate(4,sizeof(Queue_struct));
 
 	xTaskCreate(
 	    Serial_task
@@ -104,35 +117,62 @@ void setup()
 void loop() {
 
 }
+
+void processSerial(char _SerialByte)
+{
+
+}
+
 void Serial_task(void *pvParameters)
 {
 	(void) pvParameters;
-	const  TickType_t xDelay = 5000 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
-	Queue_struct messin;
-	Queue_struct messout;
-
-	messout.command = 11;
-	messout.value = 0;
-	messin.command = 0;
-	messin.value = 0;
-	DBQuery Gdb(Global_DB_Q,Serial_Q);
+	const  TickType_t Ms_delay = 1 / portTICK_PERIOD_MS;	  // Set Ms_delay to one msec.
+	char Serial_byte;
+	int Sec = 0;
+/*
+	Global_db_set(1,1274);
+	Global_db_set(2,2274);
+	Global_db_set(3,3274);
+*/
+	TSSerial mySerial(115200);
 	for (;;) // A Task shall never return or exit.
 	{
-		Serial.print("Serial: Variable 2 = ");
-		Serial.println(Gdb.Get_global(2));
+		if (Serial.available() > 0)
+		{
+			Serial_byte = Serial.read();          // get the new byte:
+			switch(Serial_byte)                // Evaluate resived data
+			{
+				case 'A':
+					mySerial.Send_rpage();                    // If "A" is resived, send Realtimedata
+					break;
+				case 'C':
+					mySerial.Send_sec(Sec);               // If "C" is resived, send Seconds (comm test)
+					break;
+				case 'S':
+					mySerial.Send_rev(CodeRev);                     // If "S" is resived, send firmware version.
+					break;
+				case 'Q':
+					mySerial.Send_rev(CodeString);                  // If "Q" is resived, send code string. Used to determing serial protocol.
+					break;
+				case 'F':
+					mySerial.Send_rev("001");                       // If "F" is resived, send serial protocol ver??
+					break;
+				case 'W':
+					mySerial.Get_eprom_var();
+					break;
+				case 'B':
+//					storage.saveConfig(pg1);                        // If "B" is resived, write pg1_var to EEPROM.
+					break;
+				case 'V':
+					mySerial.Send_eprom_var();                   // If "V" is resived, send pg1_var to tunerstudio.
+					break;
 
-		Serial.println("\nSerial: setting Variable 2 to 2274\n");
-		Gdb.Set_global(1,1274);
-		Gdb.Set_global(2,2274);
-		Gdb.Set_global(3,3274);
-		Serial.print("Serial: Now get variable 2 returns: ");
-		Serial.println(Gdb.Get_global(2));
-		Serial.println(Gdb.Get_global(1));
-		Serial.println(Gdb.Get_global(2));
-		Serial.println(Gdb.Get_global(3));
+				default: break;
+			}
 
-		vTaskDelay(xDelay);
-
+		}
+		vTaskDelay(Ms_delay*10);
+		++Sec;
 	}
 }
 
@@ -144,7 +184,6 @@ void Global_db_task(void *pvParameters)
 {
 	(void) pvParameters;
 	const  TickType_t xDelay = 5000 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
-	Serial.print("Global is starting");
 
 	Queue_struct messin,messout;
 	GlobalDB myDB;
@@ -157,7 +196,7 @@ void Global_db_task(void *pvParameters)
 
 	for (;;) // A Task shall never return or exit.
 	{
-		if (xQueueReceive(Global_DB_Q,&messin,xDelay))
+		if (xQueueReceive(Global_db_q,&messin,xDelay))
 		{
 			if (messin.command == 10)						// Some process ask for a value
 			{
@@ -176,4 +215,19 @@ void Global_db_task(void *pvParameters)
 		}
 	}
 
+}
+
+void DCC_task(void *pvParameters)
+{
+	const  TickType_t xDelay = 500 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
+
+	int i = 1;
+	for (;;) // A Task shall never return or exit.
+	{
+		Global_db_set(1,i);
+		Global_db_set(2,(i*2));
+		Global_db_set(3,(i*10));
+		vTaskDelay(xDelay);
+		i++;
+	}
 }
