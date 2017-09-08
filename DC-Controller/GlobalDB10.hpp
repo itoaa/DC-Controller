@@ -18,8 +18,9 @@
 
 struct GlobalVarStruct
 {
+	int Seconds;
 	int Charge_max_volt;
-	int	Charge_max_amp;					// ID är 2.
+	int	Charge_max_amp;					// ID är 4.
 	int	Charge_max_battery_temp;
 	int Charge_min_battery_temp;
 	int Charte_max_time_min;
