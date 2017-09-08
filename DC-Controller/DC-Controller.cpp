@@ -19,7 +19,7 @@
  */
 
 // Define for witch hardware to compile
- #define SDC-30a
+ #define SDC30a
 // #define evFartreg-proto
 
 #include "SDC-30a-HW.h"
@@ -217,7 +217,13 @@ void DCC_task(void *pvParameters)
 {
 	const  TickType_t xDelay = 500 / portTICK_PERIOD_MS;
 
+	QueueHandle_t DCC_q = xQueueCreate(2 , sizeof(Queue_struct ) );
+
 	int i = 1;
+
+	uint16_t uInt;
+	int16_t sInt;
+
 	for (;;) // A Task shall never return or exit.
 	{
 		Global_db_set(1,i);
@@ -225,5 +231,23 @@ void DCC_task(void *pvParameters)
 		Global_db_set(3,(1000+i));
 		vTaskDelay(xDelay);
 		i++;
+
+
+		Tps_filtered.addValue(Pot.getTPS());
+
+		Global_db_set(1, Tps_filtered.getFilteredValue() );			// Ändra 1 till def för Tps
+
+		Global_db_set(2, Pot.getLastADCValue() );					// Ändra 2 till def för Tps_adc
+
+		Global_db_set(3, Out_current.readCurrent() );				// Ändra 3 till def för Out_current
+
+		Global_db_set(4, Out_current.getLastADCValue() );				// Ändra 4 till Out_current_adc_index
+
+		Global_db_set(5, Volt_in.readVolt()/100 );					// Ändra 5 till In_volt_index
+
+// 		RPage.PWM = RPage.TPSPos;
+
+		analogWrite(pwmPin ,Global_db_get(1, DCC_q) );						// Ändra 1 till Tps_index
+
 	}
 }

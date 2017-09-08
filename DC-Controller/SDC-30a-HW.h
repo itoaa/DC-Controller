@@ -13,7 +13,7 @@
 
 // Setup Hardware constatns for Smedby DC Controller rev a PCB with CAN-Bus
 // *************************************************************************************************
-#ifdef  SDC-30a					// Parameter definition for SmedbyCharger 1.1 without CAN buss.
+#ifdef  SDC30a					// Parameter definition for SmedbyCharger 1.1 without CAN buss.
   #define     SerialEnabled				// Enable serial ouput on this hardware.
   #define     BaudRate 115200			// Sepeed for cerial comunication
   int  InputVoltPin  	= 	PC4;			// Pin used to measure Battery-volt
