@@ -118,11 +118,6 @@ void loop() {
 
 }
 
-void processSerial(char _SerialByte)
-{
-
-}
-
 void Serial_task(void *pvParameters)
 {
 	(void) pvParameters;
@@ -177,11 +172,12 @@ void Serial_task(void *pvParameters)
 }
 
 
-// Task to manage GlobalDatabase (GlobalDB). Uses class DB to store data.
-// Class DBQueue is used for querying GlobalDB.
-// Queue Global_DB_Q is used to get and set values.
 void Global_db_task(void *pvParameters)
 {
+	// Task to manage GlobalDatabase (GlobalDB). Uses class DB to store data.
+	// Class DBQueue is used for querying GlobalDB.
+	// Queue Global_DB_Q is used to get and set values.
+
 	(void) pvParameters;
 	const  TickType_t xDelay = 5000 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
 
@@ -219,14 +215,14 @@ void Global_db_task(void *pvParameters)
 
 void DCC_task(void *pvParameters)
 {
-	const  TickType_t xDelay = 500 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
+	const  TickType_t xDelay = 500 / portTICK_PERIOD_MS;
 
 	int i = 1;
 	for (;;) // A Task shall never return or exit.
 	{
 		Global_db_set(1,i);
 		Global_db_set(2,(i*2));
-		Global_db_set(3,(i*10));
+		Global_db_set(3,(1000+i));
 		vTaskDelay(xDelay);
 		i++;
 	}
