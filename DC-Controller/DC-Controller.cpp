@@ -85,6 +85,7 @@ void setup()
 
     Serial.begin(BaudRate);
 	while (!Serial)  { ; }						// wait for serial port to connect.
+	Serial.println("serup...");
 	Global_db_q = xQueueCreate(4,sizeof(Queue_struct));
 
 	xTaskCreate(
@@ -144,10 +145,10 @@ void Serial_task(void *pvParameters)
 					mySerial.Send_sec(Sec);               // If "C" is resived, send Seconds (comm test)
 					break;
 				case 'S':
-					mySerial.Send_rev(CodeRev);                     // If "S" is resived, send firmware version.
+					mySerial.Send_rev("DCC       2.0");                     // If "S" is resived, send firmware version.
 					break;
 				case 'Q':
-					mySerial.Send_rev(CodeString);                  // If "Q" is resived, send code string. Used to determing serial protocol.
+					mySerial.Send_rev("MSII DCC 2.0        ");                  // If "Q" is resived, send code string. Used to determing serial protocol.
 					break;
 				case 'F':
 					mySerial.Send_rev("001");                       // If "F" is resived, send serial protocol ver??
@@ -180,7 +181,7 @@ void Global_db_task(void *pvParameters)
 
 	(void) pvParameters;
 	const  TickType_t xDelay = 5000 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
-
+	Serial.println("Global starting");
 	Queue_struct messin,messout;
 	GlobalDB myDB;
 
@@ -232,7 +233,7 @@ void DCC_task(void *pvParameters)
 		vTaskDelay(xDelay);
 		i++;
 
-
+/*
 		Tps_filtered.addValue(Pot.getTPS());
 
 		Global_db_set(1, Tps_filtered.getFilteredValue() );			// Ändra 1 till def för Tps
@@ -248,6 +249,6 @@ void DCC_task(void *pvParameters)
 // 		RPage.PWM = RPage.TPSPos;
 
 		analogWrite(pwmPin ,Global_db_get(1, DCC_q) );						// Ändra 1 till Tps_index
-
+*/
 	}
 }

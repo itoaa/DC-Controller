@@ -51,10 +51,12 @@ void TSSerial::Get_eprom_var()
 
 }
 
-void TSSerial::Send_rev(String Rev)
+void TSSerial::Send_rev(char str[20])
 {
-	Serial.print(Rev);
-}
+	for ( int i = 0; str[i] != '\0' ; ++i )
+	{
+	Serial.write(str[i]);
+	}}
 void TSSerial::Send_sec(int Sec)
 {
 	Serial.print(Sec);
