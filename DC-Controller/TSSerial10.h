@@ -16,11 +16,12 @@
 #define CodeString  F("MSII DCC 2.0        ")       // String sent to TuningStudio, use F() macro to store in progmem, not in sram.
 #define CodeRev  F("DCC       2.0")                 // Code Revition to send to Megatune.
 #define RTPS  80                                    // Real time data page size
-#define PG1S  78                                    // Eprom Page1 size
+#define PG1S  78         							// Eprom Page1 size
+
 
 class TSSerial {
 public:
-	TSSerial(word BaudRate);
+	TSSerial(QueueHandle_t s_q);
 	virtual ~TSSerial();
 
 	void Send_sec(int Sec);							// Send number of seconds passed

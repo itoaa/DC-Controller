@@ -70,6 +70,10 @@ public:
 	virtual ~GlobalDB();
 	void Set_var(int ID,int Value);		// Update global variable "ID" with value "Value"
 	int Get_var(int ID);					// Get Global Variable "ID". Returns "Value"
+
+	void Set_index(int Index,char Value);		// Update global variable "ID" with value "Value"
+	char Get_index(int Index);					// Get Global Variable "ID". Returns "Value"
+
 	int test();
 	const int ChargeMaxVoltIndex = 0;
 	const int ChargeMaxAmpIndex = 2;

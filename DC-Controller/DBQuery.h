@@ -26,6 +26,9 @@ extern QueueHandle_t Global_db_q;
 
 void 	Global_db_set(int _ID, int _Value);
 int 	Global_db_get(int _ID, QueueHandle_t Resice_queue);
+void 	Global_db_index_set(int Index, char Value);
+char 	Global_db_index_get(int Index, QueueHandle_t Resice_queue);
+
 void 	Global_db_eprom_set(int _ID, int _Value);
 int 	Global_db_eprom_get(int _ID, QueueHandle_t Resice_queue);
 

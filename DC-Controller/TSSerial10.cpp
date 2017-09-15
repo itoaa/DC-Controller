@@ -7,8 +7,9 @@
 
 #include "TSSerial10.h"
 
-TSSerial::TSSerial(word BaudRate) {
-	Serial_q = xQueueCreate(2 , sizeof(Queue_struct ) );
+TSSerial::TSSerial(QueueHandle_t s_q) {
+	Serial_q = s_q;
+
 }
 
 TSSerial::~TSSerial() {
@@ -55,11 +56,12 @@ void TSSerial::Send_rev(char str[20])
 {
 	for ( int i = 0; str[i] != '\0' ; ++i )
 	{
-	Serial.write(str[i]);
-	}}
+		Serial.write(str[i]);
+	}
+}
 void TSSerial::Send_sec(int Sec)
 {
-	Serial.print(Sec);
+	Serial.write(Sec);
 }
 
 void TSSerial::Send_rpage()
@@ -72,7 +74,7 @@ void TSSerial::Send_rpage()
   int i;
   for (i=0; i < RTPS; i++)     // i = 0 till page1size
   {
-      Serial.write(Global_db_get(i,Serial_q));
+      Serial.write(Global_db_index_get(i,Serial_q));
   }
 
 }

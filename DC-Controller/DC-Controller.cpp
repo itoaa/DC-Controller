@@ -38,7 +38,7 @@ Filter Tps_filtered(7);
 
 //MegaTuneSerial mySerial(BaudRate);
 
-QueueHandle_t Global_db_q;
+QueueHandle_t Global_db_q,Serial_q,DCC_q;
 
 void Serial_task(void *pvParameters);
 void Global_db_task(void *pvParameters);
@@ -85,13 +85,15 @@ void setup()
 
     Serial.begin(BaudRate);
 	while (!Serial)  { ; }						// wait for serial port to connect.
-	Serial.println("serup...");
-	Global_db_q = xQueueCreate(4,sizeof(Queue_struct));
+	Global_db_q = xQueueCreate(3,sizeof(Queue_struct));
+	Serial_q = xQueueCreate(1 , sizeof(Queue_struct ) );
+	DCC_q = xQueueCreate(1 , sizeof(Queue_struct ) );
+
 
 	xTaskCreate(
 	    Serial_task
 	    ,  (const portCHAR *)"SerialTask"   // A name just for humans
-	    ,  256  // This stack size can be checked & adjusted by reading the Stack Highwater
+	    ,  240  // This stack size can be checked & adjusted by reading the Stack Highwater
 	    ,  NULL
 	    ,  2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 	    ,  NULL );
@@ -99,9 +101,9 @@ void setup()
 	xTaskCreate(
 	    Global_db_task
 	    ,  (const portCHAR *)"GlobalDBTask"   // A name just for humans
-	    ,  256  // This stack size can be checked & adjusted by reading the Stack Highwater
+	    ,  180  // This stack size can be checked & adjusted by reading the Stack Highwater
 	    ,  NULL
-	    ,  2  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+	    ,  3  // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
 	    ,  NULL );
 
 
@@ -114,8 +116,11 @@ void setup()
 	    ,  NULL );
 
 
+	vTaskStartScheduler();
 }
 void loop() {
+	for (;;) // A Task shall never return or exit.
+		{}
 
 }
 
@@ -125,12 +130,9 @@ void Serial_task(void *pvParameters)
 	const  TickType_t Ms_delay = 1 / portTICK_PERIOD_MS;	  // Set Ms_delay to one msec.
 	char Serial_byte;
 	int Sec = 0;
-/*
-	Global_db_set(1,1274);
-	Global_db_set(2,2274);
-	Global_db_set(3,3274);
-*/
-	TSSerial mySerial(115200);
+
+	TSSerial mySerial(Serial_q);
+
 	for (;;) // A Task shall never return or exit.
 	{
 		if (Serial.available() > 0)
@@ -181,7 +183,6 @@ void Global_db_task(void *pvParameters)
 
 	(void) pvParameters;
 	const  TickType_t xDelay = 5000 / portTICK_PERIOD_MS;	  // Set xDelay to one sec.
-	Serial.println("Global starting");
 	Queue_struct messin,messout;
 	GlobalDB myDB;
 
@@ -209,6 +210,20 @@ void Global_db_task(void *pvParameters)
 				myDB.Set_var(messin.ID,messin.value);
 			}
 
+			if (messin.command == 20)						// Some process ask for a value
+			{
+				messout.value = myDB.Get_var(messin.ID);
+				messout.command = 21;
+				messout.value = myDB.Get_var(messin.ID);
+				messout.ID = messin.ID;
+
+				xQueueSendToBack(messin.returnHandle,&messout,100);
+			}
+			if (messin.command == 21)						// Some process sent a value
+			{
+				myDB.Set_var(messin.ID,messin.value);
+			}
+
 		}
 	}
 
@@ -216,10 +231,7 @@ void Global_db_task(void *pvParameters)
 
 void DCC_task(void *pvParameters)
 {
-	const  TickType_t xDelay = 500 / portTICK_PERIOD_MS;
-
-	QueueHandle_t DCC_q = xQueueCreate(2 , sizeof(Queue_struct ) );
-
+	const  TickType_t xDelay = 1000 / portTICK_PERIOD_MS;
 	int i = 1;
 
 	uint16_t uInt;
@@ -227,9 +239,9 @@ void DCC_task(void *pvParameters)
 
 	for (;;) // A Task shall never return or exit.
 	{
-		Global_db_set(1,i);
-		Global_db_set(2,(i*2));
-		Global_db_set(3,(1000+i));
+		Global_db_set(62,i);
+		Global_db_set(64,(i));
+		Global_db_set(66,(i));
 		vTaskDelay(xDelay);
 		i++;
 
