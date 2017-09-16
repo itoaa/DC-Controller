@@ -1,17 +1,19 @@
 /*
- * GlobalDB.cpp
+ * GlobalDB11.cpp
  *
  *  Created on: 3 sep. 2017
  *      Author: Ola Andersson
  *      Version 1.0
+ *      Version 1.1
+ *      Se h-file for info
  */
 
-#include "GlobalDB10.hpp"
+#include "GlobalDB11.h"
 
 
 GlobalDB::GlobalDB()
 {
-	Global_vars.Charger_state = 0;
+//	Global_vars.Charger_state = 0;
 }
 GlobalDB::~GlobalDB()
 {

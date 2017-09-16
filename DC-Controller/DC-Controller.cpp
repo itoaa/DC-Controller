@@ -2,7 +2,7 @@
 #include <Arduino_FreeRTOS.h>
 #include <queue.h>
 
-#include "GlobalDB10.hpp"
+#include "GlobalDB11.h"
 #include "DBQuery.h"
 #include "Volt20.h"
 #include "Current20.h"
